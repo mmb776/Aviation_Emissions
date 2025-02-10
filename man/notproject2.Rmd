@@ -1,0 +1,132 @@
+---
+title: "Not Project 1"
+author: "Maria Berg"
+date: "2025-02-05"
+output: pdf_document
+header-includes:
+   - \usepackage{setspace}
+   - \doublespacing
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#data and libraries
+aviation_data <- read.csv("aviation-demand-efficiency.csv")
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(randomForest)
+library(caret)
+library(viridis)
+library(ggtext)
+library(pander)
+```
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;I chose to work with the Aviation Emissions data because of it relevance to the amount of pollution in the air. I wanted to know just how much emission plane were putting back into the air that we breathe. I also hoped to learn more about how Emissions was calculated and if covid-19 had affected those numbers in any way. I think the data was really interesting because it was set up with all the information needed to calculate aviation emissions, but it also gave that number to readers in the chance they didn’t want to calculate it themselves. I am not very confident in the source of my data. This is because in the article I received in from on World Data, the author does not mention where she originally got her data. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;The data I used was a relatively clean and good data set. It did not have any N/As or big missing parts. The things done to the data were the removal of a Code column, which seemed to have no intent of use, and the removal of the name column, which just said World in every box. I later ran into an issue with the Passenger and Freight demand columns as they were not being considers numbers to the computer and had to fix that. I only really encounter one challenge when cleaning and looking at the data set and that was that when you went to do the math to calculate Emissions you were technically missing a variable called Aviation demand. However, Aviation demand is just simply Passenger demand plus freight demand, so as I was cleaning those two, I also made an extra column of them added together.
+
+
+
+```{r include=FALSE}
+aviation_data <- aviation_data %>%
+  select(-Code)
+aviation_data[1, 4] <- 56125
+aviation_data$Passenger.demand <- as.numeric(as.character(aviation_data$Passenger.demand))
+aviation_data$Freight.demand <- as.numeric(as.character(aviation_data$Freight.demand))
+aviation_data$Aviation.demand <- aviation_data$Passenger.demand + aviation_data$Freight.demand
+```
+\newpage
+```{r echo=FALSE}
+pander(head(aviation_data))
+```
+
+
+\newpage
+**Figure 1: CO2 Emission by billion tonnes per Year**
+
+```{r echo=FALSE, warning=FALSE}
+
+library(ggimage)
+
+ggplot(aviation_data, aes(x = Year, y = CO2.emissions)) +
+  geom_line(color = "cornflowerblue", size = 1) +
+  geom_image(aes(image = "https://www.clipartmax.com/png/middle/221-2211588_airplane-clip-art-airplane-silhouette.png"),
+             size = 0.05) +  # Adjust size as needed
+  labs(
+    title = "CO2 Emissions by Year",
+    x = "Year",
+    y = "CO2 Emissions (billion tonnes)"
+  ) +
+  theme_minimal()
+
+
+```
+&nbsp;&nbsp;&nbsp;&nbsp; Figure 1: This is a graph that looks at the amount of CO2 emissions by Airplanes from the year 1990 to 2021. Co2 emission is calculated by multiplying aviation demand, energy intensity and carbon intensity. Aviation demand is the distance Freight and Passenger travel in km every year, energy intensity is how much energy used per km, and carbon intensity is the amount of fuel used per unit of energy. As we can see in the graph it has been a steady climb through out the years because there has been more traveling, but in 2020 we see a major drop because of the impact of Covid-19.
+
+\newpage
+
+**Figure 2:  Energy Intensity, Carbon Intensity, and Aviation Demand by Year**
+
+```{r echo=FALSE, fig.height=6, fig.width=12}
+
+#figure 2
+relevant_data2 <- aviation_data[, c("Year", "Energy.intensity", "Carbon.intensity", "Aviation.demand")]
+
+melted_data2 <- melt(relevant_data2, id.vars = "Year", 
+                    variable.name = "Metric", 
+                    value.name = "Value")
+
+# Define custom facet labels for strip titles
+facet_labels <- c(
+  "Energy.intensity" = "Energy Intensity (per km)",
+  "Carbon.intensity" = "Carbon Intensity (per kWh)",
+  "Aviation.demand" = "Aviation Demand (per billion km)"
+)
+
+# Define custom y-axis labels
+metric_labels <- c(
+  "Energy.intensity" = "",
+  "Carbon.intensity" = "(per kWh)",
+  "Aviation.demand" = "(per billions km)"
+)
+
+# Create the plot
+ggplot(melted_data2, aes(x = Year, y = Value, color = Metric)) +
+  geom_line(size = 1) +       
+  geom_point(size = 2) +      
+  facet_wrap(~ Metric, scales = "free_y", labeller = labeller(Metric = facet_labels)) +  
+  scale_color_viridis_d(option = "viridis") +  
+  labs(
+    title = "Yearly Trends in Aviation Metrics",
+    x = "Year",
+    y = NULL,  # Removes the default "Value" label from the y-axis
+    color = "Metric"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(size = 10, face = "bold"),  # Adjust facet title size
+    axis.text.x = element_text(size = 10),               
+    axis.text.y = element_text(size = 8),               
+    axis.title.y = element_text(size = 12),                
+    plot.title = element_text(size = 16, face = "bold",hjust = 0.5)  
+  ) +
+  # Modify y-axis labels separately
+  scale_y_continuous(name = metric_labels[melted_data2$Metric])
+
+
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;Figure 2: 
+
+
+\newpage
+&nbsp;&nbsp;&nbsp;&nbsp;The data set contains several key variables that provide insights into aviation emissions and its environmental impact. The year variable spans from 1990 to 2021, gathering data across the world, rather than by country. Aviation demand refers to the total distance traveled by passengers and freight, measured in billions of kilometers. Energy intensity indicates the fuel consumed per kilometer traveled, expressed in liters of fuel per kilometer. Carbon intensity represents the carbon emissions produced per unit of energy consumed (grams of CO2 per kWh). Carbon per unit of energy shows the amount of carbon emitted per unit of energy used. Lastly, CO2 emissions measure the total carbon emissions generated by aviation, in billion tonnes, calculated based on the other variables. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;If given more time I might have wanted to explore on a deeper level the relationship between aviation demand, energy intensity, and carbon emissions. I also would have liked to do some predictive modelling to see what might happen in the future of aviation emissions. This time around using this data set I learned more about what each of the variables mean. I had a general understanding, but I didn’t try to figure out what each variable did. [Add something about learning about graphs]. I think the biggest challenge in analysis of this data is the reliability of it. The datasets original source is unclear and that compromises the accuracy and creates potential bias. 
+
+

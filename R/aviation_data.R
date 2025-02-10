@@ -1,0 +1,16 @@
+#' A data set of Aviation Emission in the world from 1990 to 2021.
+#'
+#' @format a data frame with 32 observations of 9 variables
+#' \describe{
+#'   \item{Entity}{A reminder that this data is from the whole world.}
+#'   \item{Year}{The year for the recorded date.}
+#'   \item{Passsenger.demand}{The total amount of distance traveled by passengers in billions of kilometers.}
+#'   \item{Freight.demand}{The total amount of distance traveled by freight in billions of kilometers.}
+#'   \item{Energy.intensity}{The amount of energy used per kilometer.}
+#'   \item{Carbon.per.unit.energy}{The amount of carbon emitted per unit of energy.}
+#'   \item{Carbon.intensity}{The amount of carbon emissions relative to aviation activity measured in grams of CO2 per kWh.}
+#'   \item{CO2.emissions}{The total carbon dioxide emissions produced by aviation for that year in billion tonnes.}
+#'   \item{Aviation.demand}{The combination of Freight and Passenger distjnace traveled in biollions of kilometers.}
+#' }
+#' @source \url{https://ourworldindata.org/global-aviation-emissions}
+"aviation_data"
